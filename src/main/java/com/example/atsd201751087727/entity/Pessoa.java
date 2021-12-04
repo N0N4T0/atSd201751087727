@@ -1,27 +1,34 @@
 package com.example.atsd201751087727.entity;
 
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "PRODUCT_TBL")
+@Entity(name = "tb_pessoas")
 public class Pessoa {
 
     @Id
-    @GeneratedValue
-    private int idPessoa;
-    private String Nome;
-    private Date Nascimento;
-    private String Cpf;
-    private String TipoSanguineo;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idPessoa;
+
+    private String nome;
+
+    private Date dataNascimento;
+
+    private String cpf;
+
+    private String tipoSanguineo;
+
+    @OneToMany(mappedBy = "titularEndereco")
+    private List<Endereco> enderecosCadastrados;
 }

@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EnderecoService {
+
     @Autowired
     private EnderecoRepository repository;
 
@@ -24,26 +26,30 @@ public class EnderecoService {
         return repository.findAll();
     }
 
-    public Endereco getEnderecoById(int idEndereco) {
-        return repository.findById(idEndereco).orElse(null);
+    public Optional<Endereco> getEnderecoById(Long idEndereco) {
+        return repository.findById(idEndereco);
     }
 
-    public Endereco getEnderecoByLogradouro(String logradouro) {
+    public List<Endereco> getEnderecoByLogradouro(String logradouro) {
         return repository.findByLogradouro(logradouro);
     }
 
-    public String deleteEndereco(int idEndereco) {
+    public String deleteEndereco(Long idEndereco) {
         repository.deleteById(idEndereco);
         return "endereço removido !! " + idEndereco;
     }
 
-    public Endereco updateEndereco(Endereco endereco) {
-        Endereco existingEndereco = repository.findById(endereco.getIdEndereco()).orElse(null);
-        existingEndereco.setLogradouro(endereco.getLogradouro());
-        existingEndereco.setBairro(endereco.getBairro());
-        existingEndereco.setNumero(endereco.getNumero());
-        existingEndereco.setComplemento(endereco.getComplemento());
-        return repository.save(existingEndereco);
+    public Endereco updateEndereco(Long id, Endereco endereco) {
+        Endereco enderecoAntigo = repository.getById(id);
+        updateEntityRepository(enderecoAntigo, endereco);
+        return repository.save(enderecoAntigo);
     }
 
+    private void updateEntityRepository(Endereco enderecoAntigo, Endereco enderecoNovo) {
+        enderecoAntigo.setTitularEndereco(enderecoNovo.getTitularEndereco());
+        enderecoAntigo.setBairro(enderecoNovo.getBairro());
+        enderecoAntigo.setComplemento(enderecoNovo.getComplemento());
+        enderecoAntigo.setNumero(enderecoNovo.getNumero());
+        enderecoAntigo.setLogradouro(enderecoNovo.getLogradouro());
+    }
 }

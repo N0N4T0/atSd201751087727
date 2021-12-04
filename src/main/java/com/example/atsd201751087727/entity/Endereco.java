@@ -1,28 +1,34 @@
 package com.example.atsd201751087727.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "PRODUCT_TBL")
+@Entity(name = "tb_enderecos")
 public class Endereco {
+
     @Id
-    @GeneratedValue
-    private int idEndereco ;
-    private int idPessoa ;
-    private String Logradouro ;
-    private String Bairro ;
-    private String Numero ;
-    private String Complemento ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idEndereco;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "titular_id")
+    private Pessoa titularEndereco;
+
+    private String logradouro;
+
+    private String bairro;
+
+    private String numero;
+
+    private String complemento;
 }
-
-

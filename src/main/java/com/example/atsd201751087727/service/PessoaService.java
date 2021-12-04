@@ -6,46 +6,46 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PessoaService {
+
     @Autowired
     private PessoaRepository repository;
-
-    public Pessoa savePessoa(Pessoa pessoa) {
-        return repository.save(pessoa);
-    }
-
-
-    public List<Pessoa> savePessoas(List<Pessoa> pessoas) {
-        return repository.saveAll(pessoas);
-    }
 
     public List<Pessoa> getPessoas() {
         return repository.findAll();
     }
 
-    public Pessoa getPessoaById(int id) {
-        return repository.findById(id).orElse(null);
+    public Optional<Pessoa> getPessoaById(Long id) {
+        return repository.findById(id);
     }
 
-    public Pessoa getPessoaByName(String name) {
+    public List<Pessoa> getPessoaByName(String name) {
         return repository.findByName(name);
     }
 
-    public String deletePessoa(int id) {
+    public Pessoa savePessoa(Pessoa pessoa) {
+        return repository.save(pessoa);
+    }
+
+    public String deletePessoa(Long id) {
         repository.deleteById(id);
         return "pessoa removida !! " + id;
     }
 
-    public Pessoa updatePessoa(Pessoa pessoa) {
-        Pessoa existingPessoa = repository.findById(pessoa.getIdPessoa()).orElse(null);
-        existingPessoa.setNome(pessoa.getNome());
-        existingPessoa.setNascimento(pessoa.getNascimento());
-        existingPessoa.setCpf(pessoa.getCpf());
-        existingPessoa.setTipoSanguineo(pessoa.getTipoSanguineo());
-        return repository.save(existingPessoa);
+    public Pessoa updatePessoa(Long id, Pessoa pessoa) {
+        Pessoa pessoaAntiga = repository.getById(id);
+        updateEntityRepository(pessoaAntiga, pessoa);
+        return repository.save(pessoaAntiga);
     }
 
-
+    private void updateEntityRepository(Pessoa pessoaAntiga, Pessoa pessoaNova) {
+        pessoaAntiga.setNome(pessoaNova.getNome());
+        pessoaAntiga.setCpf(pessoaNova.getCpf());
+        pessoaAntiga.setDataNascimento(pessoaNova.getDataNascimento());
+        pessoaAntiga.setTipoSanguineo(pessoaNova.getTipoSanguineo());
+        pessoaAntiga.setEnderecosCadastrados(pessoaNova.getEnderecosCadastrados());
+    }
 }

@@ -3,47 +3,66 @@ package com.example.atsd201751087727.controller;
 import com.example.atsd201751087727.entity.Pessoa;
 import com.example.atsd201751087727.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/pessoas")
 public class PessoaController {
+
     @Autowired
     private PessoaService service;
 
+    @GetMapping
+    public ResponseEntity<List<Pessoa>> findAllPessoas() {
+        List<Pessoa> pessoas = service.getPessoas();
+        if (pessoas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(pessoas);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Pessoa> findPessoaById(@PathVariable Long id) {
+        Optional<Pessoa> pessoaProcurada = service.getPessoaById(id);
+        if (!pessoaProcurada.isPresent()) {
+            ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(pessoaProcurada.get());
+    }
+
+    @GetMapping("/{nome}")
+    public ResponseEntity<List<Pessoa>> findPessoaByName(@PathVariable String nome) {
+        List<Pessoa> pessoasProcurada = service.getPessoaByName(nome);
+        if(pessoasProcurada.isEmpty()){
+            ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok().body(pessoasProcurada);
+    }
+
     @PostMapping
-    public Pessoa addPessoa(@RequestBody Pessoa pessoa){
-        return service.savePessoa(pessoa);
+    public ResponseEntity<Pessoa> addPessoa(@RequestBody Pessoa pessoa) {
+        pessoa = service.savePessoa(pessoa);
+        // Cria a uri do objeto inserido no banco de dados para retornar no header da request
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")
+                .buildAndExpand(pessoa.getIdPessoa()).toUri();
+        return ResponseEntity.created(uri).body(pessoa);
     }
 
-    @PostMapping
-    public List<Pessoa> addPessoas(@RequestBody List<Pessoa> pessoas){
-        return service.savePessoas(pessoas);
+    @PutMapping("/{id}")
+    public ResponseEntity<Pessoa> updatePessoa(@PathVariable Long id, @RequestBody Pessoa pessoa) {
+        pessoa = service.updatePessoa(id, pessoa);
+        return ResponseEntity.ok().body(pessoa);
     }
 
-    @GetMapping
-    public List<Pessoa> findAllPessoas(){
-        return service.getPessoas();
-    }
-
-    @GetMapping
-    public Pessoa findPessoaById(@PathVariable int id) {
-        return service.getPessoaById(id);
-    }
-
-    @GetMapping
-    public Pessoa findPessoaByName(@PathVariable String name) {
-        return service.getPessoaByName(name);
-    }
-
-    @PutMapping
-    public Pessoa updatePessoa(@RequestBody Pessoa pessoa) {
-        return service.updatePessoa(pessoa);
-    }
-
-    @DeleteMapping
-    public String deletePessoa(@PathVariable int id) {
-        return service.deletePessoa(id);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
+        service.deletePessoa(id);
+        return ResponseEntity.noContent().build();
     }
 }
