@@ -1,12 +1,15 @@
 package com.example.atsd201751087727.controller;
 
 import com.example.atsd201751087727.entity.Endereco;
+import com.example.atsd201751087727.entity.Pessoa;
 import com.example.atsd201751087727.service.EnderecoService;
+import com.example.atsd201751087727.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.swing.text.html.Option;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +20,9 @@ public class EnderecoController {
 
     @Autowired
     private EnderecoService service;
+
+    @Autowired
+    private PessoaService pessoaService;
 
     @GetMapping
     public ResponseEntity<List<Endereco>> findAllEndereco() {
@@ -45,8 +51,12 @@ public class EnderecoController {
         return ResponseEntity.ok().body(enderecosBuscados);
     }
 
-    @PostMapping
-    public ResponseEntity<Endereco> addEndereco(@RequestBody Endereco endereco) {
+    @PostMapping("/{idEnd}")
+    public ResponseEntity<Endereco> addEndereco(@RequestBody Endereco endereco, @PathVariable Long idEnd) {
+        Optional<Pessoa> pessoaAux = pessoaService.getPessoaById(idEnd);
+        if(pessoaAux.isPresent()){
+            endereco.setTitularEndereco(pessoaAux.get());
+        }
         endereco = service.saveEndereco(endereco);
         // Cria a uri do objeto inserido no banco de dados para retornar no header da request
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")

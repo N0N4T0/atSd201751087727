@@ -1,6 +1,7 @@
 package com.example.atsd201751087727.controller;
 
 import com.example.atsd201751087727.entity.Pessoa;
+import com.example.atsd201751087727.service.EnderecoService;
 import com.example.atsd201751087727.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ public class PessoaController {
 
     @Autowired
     private PessoaService service;
+
+    @Autowired
+    private EnderecoService enderecoService;
 
     @GetMapping
     public ResponseEntity<List<Pessoa>> findAllPessoas() {
@@ -47,10 +51,15 @@ public class PessoaController {
 
     @PostMapping
     public ResponseEntity<Pessoa> addPessoa(@RequestBody Pessoa pessoa) {
-        pessoa = service.savePessoa(pessoa);
+        Pessoa pessoaAux = service.savePessoa(pessoa);
+        if(!pessoa.getEnderecosCadastrados().isEmpty()){
+            pessoa.getEnderecosCadastrados().stream().forEach(x -> x.setTitularEndereco(pessoaAux));
+            pessoa.getEnderecosCadastrados().stream().forEach(x -> enderecoService.saveEndereco(x));
+        }
+
         // Cria a uri do objeto inserido no banco de dados para retornar no header da request
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")
-                .buildAndExpand(pessoa.getIdPessoa()).toUri();
+                .buildAndExpand(pessoaAux.getIdPessoa()).toUri();
         return ResponseEntity.created(uri).body(pessoa);
     }
 
@@ -62,6 +71,10 @@ public class PessoaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarPessoa(@PathVariable Long id) {
+        Optional<Pessoa> pessoaSelecionada = service.getPessoaById(id);
+        if(pessoaSelecionada.isPresent() && !pessoaSelecionada.get().getEnderecosCadastrados().isEmpty()){
+            pessoaSelecionada.get().getEnderecosCadastrados().stream().forEach(x ->enderecoService.deleteEndereco(x.getIdEndereco()));
+        }
         service.deletePessoa(id);
         return ResponseEntity.noContent().build();
     }
